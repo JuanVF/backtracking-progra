@@ -1,6 +1,8 @@
 function CardsSection(){
     return (
-        <div></div>
+        <div>
+            
+        </div>
     )
 }
 

@@ -8,6 +8,8 @@ let cardTextType = new Map([
 ])
 
 // Este componente corresponde al texto de las cartas
+// props: type - string
+//        text - string
 function CardsText(props){   
     let hasCardType = cardTextType.has(props.type)
     let cardType = cardTextType["default"]

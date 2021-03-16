@@ -1,5 +1,5 @@
 import './css/app.css';
-import Cards from './components/cards'
+import CardsContainer from './components/cardsContainer'
 
 function App() {
     let cardsList = [
@@ -25,9 +25,28 @@ function App() {
       }
     ]
 
+    let containers = [
+      {
+        title : "Sospechosos",
+        cardsList : cardsList
+      },
+      {
+        title : "Armas",
+        cardsList : cardsList
+      },
+      {
+        title : "Lugar",
+        cardsList : cardsList
+      },
+      {
+        title : "Motivo",
+        cardsList : cardsList
+      },
+    ]
+
     return (
       <div>
-        <Cards title="Sospechosos" cardsList={cardsList}/>
+        <CardsContainer cardsList={containers}/>
       </div>
     );
 }

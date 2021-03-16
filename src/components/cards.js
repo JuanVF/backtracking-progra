@@ -1,6 +1,8 @@
 import CardsText from './cardsText'
 
 // Esto genera las cartas disponibles
+// Props: cardsList - lista de cartas
+//        title - string
 function GenerateCards(cardsList){
     return cardsList.map((card, key)=> <CardsText key={key} type={card.type} text={card.text}/>)
 }
