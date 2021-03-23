@@ -1,59 +1,21 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/JuanVF/gogame-server/sockets"
-	"github.com/gorilla/websocket"
+	"fmt"
 )
 
-var Upgrader = websocket.Upgrader{}
-var Handler *sockets.SocketHandler = sockets.GetInstance()
-
-func HandlerExample(w http.ResponseWriter, r *http.Request) {
-	ws, err := Upgrader.Upgrade(w, r, nil) // Con esto generamos el websocket
-
-	// Esto es un estandar en GoLang, manejar los errors asi
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Aqui agregamos una conexion
-	Handler.AddConn(ws)
-
-	// Aqui hacemos un Listener para escuchar al usuario
-	for {
-		var msg sockets.Message
-
-		// Esperamos que el usuario mande algo
-		err := ws.ReadJSON(&msg)
-
-		// Si hubo un error desconectamos al usaurio
-		if err != nil {
-			Handler.RemoveConn(ws)
-
-			break
-		}
-
-		// Sacamos la accion que viene del ID del mensaje y la ejecutamos
-		action := Handler.GetAction(msg.ID)
-
-		action()
-	}
-}
-
-func FuncionEjemplo() {
-	// Aqui hacemos cualquier cosa x
-}
-
 func main() {
-	server := NewServer(5000)
+	sospechoso := []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"}
+	arma := []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"}
+	motivo := []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"}
+	cuerpo := []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"}
+	lugar := []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"}
 
-	server.Handle("/api", "GET", HandlerExample)
+	posibilidades := [][]string{sospechoso, arma, motivo, cuerpo, lugar}
+	solucion := []string{"El/la colega de trabajo", "Cuerda", "Robo", "Brazos", "Cocina"}
+	encontrada := []string{}
 
-	// Aqui decimos que con el ID 1, agregamos la funcion de ejemplo
-	Handler.AddAction(1, FuncionEjemplo)
+	iteraciones, _ := FuerzaBruta(posibilidades, solucion, encontrada)
 
-	server.Listen()
+	fmt.Printf("Iteraciones en fuerza bruta: %d\n", iteraciones)
 }
