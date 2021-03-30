@@ -1,0 +1,167 @@
+[
+    {
+        "categoria" : "Sospechosos",
+        "posibilidades" : [
+            {
+                "text" : "El/la mejor amigo(a)",
+                "type" : "default"
+            },
+            {
+                "text" : "El/la novio(a)",
+                "type" : "default"
+            },
+            {
+                "text" : "El/la vecino(a)",
+                "type" : "default"
+            },
+            {
+                "text" : "El mensajero",
+                "type" : "default"
+            },
+            {
+                "text" : "El extraño",
+                "type" : "default"
+            },
+            {
+                "text" : "El/la hermanastro(a)",
+                "type" : "default"
+            }
+        ]
+    },
+    {
+        "categoria" : "Arma",
+        "posibilidades" : [
+            {
+                "text" : "Pistola",
+                "type" : "default"
+            },
+            {
+                "text" : "Cuchillo",
+                "type" : "default"
+            },
+            {
+                "text" : "Machete",
+                "type" : "default"
+            },
+            {
+                "text" : "Pala",
+                "type" : "default"
+            },
+            {
+                "text" : "Bate",
+                "type" : "default"
+            },
+            {
+                "text" : "Botella",
+                "type" : "default"
+            },
+            {
+                "text" : "Tubo",
+                "type" : "default"
+            },
+            {
+                "text" : "Cuerda",
+                "type" : "default"
+            }
+        ]
+    },
+    {
+        "categoria" : "Motivo",
+        "posibilidades" : [
+            {
+                "text" : "Venganza",
+                "type" : "default"
+            },
+            {
+                "text" : "Celos",
+                "type" : "default"
+            },
+            {
+                "text" : "Dinero",
+                "type" : "default"
+            },
+            {
+                "text" : "Accidente",
+                "type" : "default"
+            },
+            {
+                "text" : "Drogas",
+                "type" : "default"
+            },
+            {
+                "text" : "Robo",
+                "type" : "default"
+            }
+        ]
+    },
+    {
+        "categoria" : "Parte del cuerpo",
+        "posibilidades" : [
+            {
+                "text" : "Cabeza",
+                "type" : "default"
+            },
+            {
+                "text" : "Pecho",
+                "type" : "default"
+            },
+            {
+                "text" : "Abdomen",
+                "type" : "default"
+            },
+            {
+                "text" : "Espalda",
+                "type" : "default"
+            },
+            {
+                "text" : "Piernas",
+                "type" : "default"
+            },
+            {
+                "text" : "Brazos",
+                "type" : "default"
+            }
+        ]
+    },
+    {
+        "categoria" : "Lugar",
+        "posibilidades" : [
+            {
+                "text" : "Sala",
+                "type" : "default"
+            },
+            {
+                "text" : "Comedor",
+                "type" : "default"
+            },
+            {
+                "text" : "Baño",
+                "type" : "default"
+            },
+            {
+                "text" : "Terraza",
+                "type" : "default"
+            },
+            {
+                "text" : "Cuarto",
+                "type" : "default"
+            },
+            {
+                "text" : "Garage",
+                "type" : "default"
+            },
+            {
+                "text" : "Patio",
+                "type" : "default"
+            },
+            {
+                "text" : "Balcón",
+                "type" : "default"
+            },
+            {
+                "text" : "Cocina",
+                "type" : "default"
+            }
+        ]
+    }
+]

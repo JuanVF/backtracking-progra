@@ -57,4 +57,14 @@
     justify-content: center;
     justify-items: center;
     grid-template-columns: repeat(5, minmax(100px, 1fr));
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.cards-container-title {
+    color: #1b1b1b;
+    font-weight: bold;
+    font-size: 1.5em;
+    padding: 10px 20px;
+    box-sizing: border-box;
 }

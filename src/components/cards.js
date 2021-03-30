@@ -9,7 +9,7 @@ function GenerateCards(cardsList){
 
 function Cards(props){
     let cardsList = []
-
+    
     if (props.cardsList){
         cardsList = GenerateCards(props.cardsList)
     }
