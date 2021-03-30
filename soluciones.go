@@ -1,33 +1,78 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"reflect"
+
+	"github.com/JuanVF/gogame-server/sockets"
 )
 
-// TODO: El de restricciones solo eliminar uno
-func Restricciones() []string {
-	return nil
+type Categorias struct {
+	Categoria     string   `json:"Categoria"`
+	Posibilidades []string `json:"Posibilidades"`
 }
 
-func FuerzaBruta(posibilidades [][]string, solucion, encontrada []string) (int, bool) {
+func GetCategorias() []Categorias {
+	categorias := make([]Categorias, 5)
+
+	categorias[0] = Categorias{
+		Categoria:     "sospechoso",
+		Posibilidades: []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"},
+	}
+
+	categorias[1] = Categorias{
+		Categoria:     "arma",
+		Posibilidades: []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"},
+	}
+
+	categorias[2] = Categorias{
+		Categoria:     "motivo",
+		Posibilidades: []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"},
+	}
+
+	categorias[3] = Categorias{
+		Categoria:     "cuerpo",
+		Posibilidades: []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"},
+	}
+
+	categorias[4] = Categorias{
+		Categoria:     "lugar",
+		Posibilidades: []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"},
+	}
+
+	return categorias
+}
+
+func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message) (int, bool) {
 	// Caso base
-	if len(posibilidades) == 0 {
-		if Equals(solucion, encontrada) {
-			fmt.Println(encontrada)
-			return 1, true
+	if len(categorias) == 0 {
+		json, _ := json.Marshal(encontrada)
+		message := sockets.Message{
+			ID:   0,
+			Json: string(json),
 		}
 
-		return 1, false
+		isSolution := reflect.DeepEqual(solucion, encontrada)
+
+		if isSolution {
+			message.ID = 1
+		}
+
+		(*mensajes) = append(*mensajes, message)
+
+		return 1, isSolution
 	}
 
 	amount := 0
 
 	// Probamos cada array
-	for _, posibilidad := range posibilidades[0] {
-		generada := append(encontrada, posibilidad)
+	for _, posibilidad := range categorias[0].Posibilidades {
+		generada := append(encontrada, Categorias{
+			Categoria:     categorias[0].Categoria,
+			Posibilidades: []string{posibilidad},
+		})
 
-		iteraciones, finded := FuerzaBruta(posibilidades[1:], solucion, generada)
+		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, mensajes)
 		amount += iteraciones
 
 		if finded {
@@ -36,8 +81,4 @@ func FuerzaBruta(posibilidades [][]string, solucion, encontrada []string) (int, 
 	}
 
 	return amount, false
-}
-
-func Equals(arr1, arr2 []string) bool {
-	return reflect.DeepEqual(arr1, arr2)
 }

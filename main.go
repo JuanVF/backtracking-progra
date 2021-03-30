@@ -1,21 +1,54 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/JuanVF/gogame-server/sockets"
+	"github.com/gorilla/websocket"
 )
 
+var Upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func HandlerUsers(w http.ResponseWriter, req *http.Request) {
+	ws, err := Upgrader.Upgrade(w, req, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer ws.Close()
+
+	sockets.GetInstance().AddConn(ws)
+
+	for {
+		var msg sockets.Message
+
+		err := ws.ReadJSON(&msg)
+
+		if err != nil {
+			log.Printf("Message error: %v", err)
+
+			sockets.GetInstance().RemoveConn(ws)
+			break
+		}
+
+		log.Printf("User sended: %v\n", msg)
+
+		sockets.GetInstance().GetAction(msg.ID)(ws)
+	}
+}
+
 func main() {
-	sospechoso := []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"}
-	arma := []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"}
-	motivo := []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"}
-	cuerpo := []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"}
-	lugar := []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"}
+	sockets.GetInstance().AddAction(0, TestFuerzaBruta)
 
-	posibilidades := [][]string{sospechoso, arma, motivo, cuerpo, lugar}
-	solucion := []string{"El/la colega de trabajo", "Cuerda", "Robo", "Brazos", "Cocina"}
-	encontrada := []string{}
+	server := NewServer(5000)
 
-	iteraciones, _ := FuerzaBruta(posibilidades, solucion, encontrada)
+	server.Handle("/api", "GET", HandlerUsers)
 
-	fmt.Printf("Iteraciones en fuerza bruta: %d\n", iteraciones)
+	server.Listen()
 }
