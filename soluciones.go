@@ -7,11 +7,6 @@ import (
 	"github.com/JuanVF/gogame-server/sockets"
 )
 
-type Categorias struct {
-	Categoria     string   `json:"Categoria"`
-	Posibilidades []string `json:"Posibilidades"`
-}
-
 func GetCategorias() []Categorias {
 	categorias := make([]Categorias, 5)
 
@@ -41,6 +36,11 @@ func GetCategorias() []Categorias {
 	}
 
 	return categorias
+}
+
+type Categorias struct {
+	Categoria     string   `json:"Categoria"`
+	Posibilidades []string `json:"Posibilidades"`
 }
 
 func FuerzaBruta2(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message) (int, bool) {

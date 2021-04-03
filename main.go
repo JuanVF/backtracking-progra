@@ -2,16 +2,52 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
+	"net/http"
 	"reflect"
+
+	"github.com/JuanVF/gogame-server/sockets"
+	"github.com/gorilla/websocket"
 )
 
+var Upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func HandlerUsers(w http.ResponseWriter, req *http.Request) {
+	ws, err := Upgrader.Upgrade(w, req, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer ws.Close()
+
+	sockets.GetInstance().AddConn(ws)
+
+	for {
+		var msg sockets.Message
+
+		err := ws.ReadJSON(&msg)
+
+		if err != nil {
+			log.Printf("Message error: %v", err)
+
+			sockets.GetInstance().RemoveConn(ws)
+			break
+		}
+
+		log.Printf("User sended: %v\n", msg)
+
+		sockets.GetInstance().GetAction(msg.ID)(ws)
+	}
+}
+
 func main() {
-	sospechoso := []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"}
-	arma := []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"}
-	motivo := []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"}
-	cuerpo := []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"}
-	lugar := []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"}
+	sockets.GetInstance().AddAction(0, TestFuerzaBruta)
 
 	posibilidades := [][]string{sospechoso, arma, motivo, cuerpo, lugar}
 	rest := rest_generator(15, posibilidades)
