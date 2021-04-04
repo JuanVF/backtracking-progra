@@ -47,18 +47,22 @@ func HandlerUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	sockets.GetInstance().AddAction(0, TestFuerzaBruta)
+
+	sospechoso := []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"}
+	arma := []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"}
+	motivo := []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"}
+	cuerpo := []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"}
+	lugar := []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"}
 
 	posibilidades := [][]string{sospechoso, arma, motivo, cuerpo, lugar}
+
 	rest := rest_generator(15, posibilidades)
 	solv := solution(posibilidades, rest)
 	encontrada := []string{}
-	eliminadas := []string{}
-
+	eliminadas := make(map[string]bool)
+	fmt.Println("Solución:  ", solv)
 	iteraciones1, _ := FuerzaBruta(posibilidades, solv, encontrada)
-	iteraciones2, _, _ := backtracking(posibilidades, solv, encontrada, rest, eliminadas)
-	fmt.Println(rest)
-	fmt.Println(solv)
+	iteraciones2, _, eliminadas := backtracking(posibilidades, solv, encontrada, rest, eliminadas)
 
 	fmt.Printf("Iteraciones en fuerza bruta: %d\n", iteraciones1)
 	fmt.Printf("Iteraciones en bacttracking: %d\n", iteraciones2)
@@ -69,7 +73,6 @@ func FuerzaBruta(posibilidades [][]string, solucion, encontrada []string) (int, 
 	// Caso base
 	if len(posibilidades) == 0 {
 		if Equals(solucion, encontrada) {
-			fmt.Println(encontrada)
 			return 1, true
 		}
 
@@ -93,7 +96,7 @@ func FuerzaBruta(posibilidades [][]string, solucion, encontrada []string) (int, 
 	return amount, false
 }
 
-func select_elim(try []string, solv []string) string {
+func select_elim(solv []string, try []string) string {
 	delete := ""
 	for delete == "" {
 		i := rand.Intn(len(try))
@@ -105,47 +108,51 @@ func select_elim(try []string, solv []string) string {
 	return delete
 }
 
-func backtracking(posibilidades [][]string, solucion, encontrada []string, rest [][]string, eliminadas []string) (int, bool, string) {
+func backtracking(posibilidades [][]string, solucion, encontrada []string, rest [][]string, eliminadas map[string]bool) (int, bool, map[string]bool) {
 
 	// Caso base
 	if len(posibilidades) == 0 {
-		fmt.Println(encontrada)
 		if Equals(solucion, encontrada) {
-			return 1, true, "*"
+			fmt.Println("try: ", encontrada, "		FINAL")
+			return 1, true, eliminadas
 		}
-		elm := select_elim(solucion, encontrada)
-		println(elm)
-		return 1, false, elm
+		i := select_elim(solucion, encontrada)
+		eliminadas[i] = true
+		fmt.Println("try: ", encontrada, "		eliminado:", i)
+		return 1, false, eliminadas
 	}
 
 	amount := 0
-	elim := ""
 	// Probamos cada array
 	for _, posibilidad := range posibilidades[0] {
 		generada := append(encontrada, posibilidad)
-		if sol_validation(generada, rest, eliminadas) {
-			iteraciones, finded, elim := backtracking(posibilidades[1:], solucion, generada, rest, eliminadas)
-			if elim != "" {
-				eliminadas = append(eliminadas, elim)
-			}
+		if !gen_validation(encontrada, eliminadas) {
+			continue
+		}
+		if sol_validation(generada, rest) {
+			iteraciones, finded, eliminadas := backtracking(posibilidades[1:], solucion, generada, rest, eliminadas)
 			amount += iteraciones
 			if finded {
-				return amount, true, elim
+				return amount, true, eliminadas
 			}
 		}
 	}
-
-	return amount, false, elim
+	return amount, false, eliminadas
 }
 
-func sol_validation(solv []string, rest [][]string, eliminadas []string) bool {
-	for i := 0; i < len(rest); i++ {
-		if find(solv, rest[i][0]) || find(solv, rest[i][1]) {
+func gen_validation(encontrada []string, eliminadas map[string]bool) bool {
+
+	for _, x := range encontrada {
+		if eliminadas[x] {
 			return false
 		}
 	}
-	for i := 0; i < len(eliminadas); i++ {
-		if find(solv, eliminadas[i]) {
+	return true
+}
+
+func sol_validation(solv []string, rest [][]string) bool {
+	for i := 0; i < len(rest); i++ {
+		if find(solv, rest[i][0]) || find(solv, rest[i][1]) {
 			return false
 		}
 	}
@@ -154,11 +161,10 @@ func sol_validation(solv []string, rest [][]string, eliminadas []string) bool {
 
 func solution(posibilidades [][]string, rest [][]string) []string {
 	aux := false
-	eliminadas := []string{}
 	solv := make([]string, len(posibilidades))
 	for !aux {
 		solv = try_select(posibilidades)
-		aux = sol_validation(solv, rest, eliminadas)
+		aux = sol_validation(solv, rest)
 	}
 	return solv
 }
