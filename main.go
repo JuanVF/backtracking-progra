@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/JuanVF/gogame-server/sockets"
 	"github.com/gorilla/websocket"
@@ -97,6 +98,7 @@ func FuerzaBruta(posibilidades [][]string, solucion, encontrada []string) (int, 
 }
 
 func select_elim(solv []string, try []string) string {
+	rand.Seed(time.Now().UnixNano())
 	delete := ""
 	for delete == "" {
 		i := rand.Intn(len(try))
@@ -171,6 +173,8 @@ func solution(posibilidades [][]string, rest [][]string) []string {
 
 func rest_generator(cant int, posibilidades [][]string) [][]string {
 
+	rand.Seed(time.Now().UnixNano())
+
 	rest := make([][]string, cant)
 
 	for i := 0; i < cant; i++ {
@@ -191,6 +195,7 @@ func rest_generator(cant int, posibilidades [][]string) [][]string {
 }
 
 func try_select(posibilidades [][]string) []string {
+	rand.Seed(time.Now().UnixNano())
 	solv := make([]string, 5)
 	for i := 0; i < len(posibilidades); i++ {
 		solv[i] = posibilidades[i][rand.Intn(len(posibilidades[i]))]
