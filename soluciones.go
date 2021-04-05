@@ -1,11 +1,15 @@
 package main
 
 import (
-	"encoding/json"
-	"reflect"
-
-	"github.com/JuanVF/gogame-server/sockets"
+	"math/rand"
+	"time"
 )
+
+// Esta estructura es para organizar los datos por categorias
+type Categorias struct {
+	Categoria     string   `json:"Categoria"`
+	Posibilidades []string `json:"Posibilidades"`
+}
 
 func GetCategorias() []Categorias {
 	categorias := make([]Categorias, 5)
@@ -38,47 +42,115 @@ func GetCategorias() []Categorias {
 	return categorias
 }
 
-type Categorias struct {
-	Categoria     string   `json:"Categoria"`
-	Posibilidades []string `json:"Posibilidades"`
+// Determina si una solución es válida
+// Sea k : tamano de restricciones, n : tamano de solv
+// Coste algoritmico: O(kn)
+func isRightSolution(solv []Categorias, rest [][]string) bool {
+	for _, restriccion := range rest { // Maximo k iteraciones
+		if Find(solv, restriccion) { // Maximo n iteraciones
+			return false
+		}
+	}
+
+	return true
 }
 
-func FuerzaBruta2(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message) (int, bool) {
-	// Caso base
-	if len(categorias) == 0 {
-		json, _ := json.Marshal(encontrada)
-		message := sockets.Message{
-			ID:   0,
-			Json: string(json),
-		}
+// Se genera una solucion sin validar que sea valida
+// Complejidad del algoritmo: O(n)
+func GetSolution(posibilidades []Categorias, rest [][]string) []Categorias {
+	rand.Seed(time.Now().UnixNano())
+	solv := make([]Categorias, len(posibilidades))
 
-		isSolution := reflect.DeepEqual(solucion, encontrada)
+	posibilidades = GetValidPosibilities(posibilidades, rest)
 
-		if isSolution {
-			message.ID = 1
-		}
+	for i := 0; i < len(posibilidades); i++ { // Maximo n iteraciones
+		length := len(posibilidades[i].Posibilidades)
+		randPos := posibilidades[i].Posibilidades[rand.Intn(length)]
 
-		(*mensajes) = append(*mensajes, message)
-
-		return 1, isSolution
+		solv[i] = Categorias{Categoria: posibilidades[i].Categoria}
+		solv[i].Posibilidades = append(solv[i].Posibilidades, randPos)
 	}
 
-	amount := 0
+	return solv
+}
 
-	// Probamos cada array
-	for _, posibilidad := range categorias[0].Posibilidades {
-		generada := append(encontrada, Categorias{
-			Categoria:     categorias[0].Categoria,
-			Posibilidades: []string{posibilidad},
-		})
+// Dadas unas restricciones retorna posibilidades validas para generar una solucion
+// Complejidad del algoritmo: O(kn)
+func GetValidPosibilities(categorias []Categorias, rest [][]string) []Categorias {
+	tmp := make([]Categorias, 0)
+	restMap := make(map[string]bool)
+	added := make(map[string]bool)
 
-		iteraciones, finded := FuerzaBruta2(categorias[1:], solucion, generada, mensajes)
-		amount += iteraciones
+	for i := 0; i < len(categorias); i++ { // Maximo 5 iteraciones
+		tmp = append(tmp, Categorias{Categoria: categorias[i].Categoria})
 
-		if finded {
-			return amount, true
+		// Este codigo necesita refactor
+		for _, posibilidad := range categorias[i].Posibilidades { // Maximo n iteraciones
+			for _, restriccion := range rest { // Maximo k iteraciones
+				if restMap[posibilidad] || added[posibilidad] {
+					continue
+				}
+
+				switch posibilidad {
+				case restriccion[0]:
+					restMap[restriccion[1]] = true
+					break
+				case restriccion[1]:
+					restMap[restriccion[0]] = true
+					break
+				}
+
+				added[posibilidad] = true
+				tmp[i].Posibilidades = append(tmp[i].Posibilidades, posibilidad)
+			}
 		}
 	}
 
-	return amount, false
+	return tmp
+}
+
+// Genera las restricciones aleatorias
+// Complejidad del algoritmo: O(n)
+func GenerateRest(cant int, posibilidades []Categorias) [][]string {
+	rand.Seed(time.Now().UnixNano())
+
+	rest := make([][]string, cant)
+
+	for i := 0; i < cant; i++ { // Maximo de iteraciones n
+		rest[i] = make([]string, 2)
+		index := rand.Intn(len(posibilidades))
+
+		l1 := posibilidades[index]
+
+		// Eliminamos el l1 del indice para no repetirlo
+		tmp := posibilidades[:index]
+		tmp = append(tmp, posibilidades[index+1:]...)
+
+		l2 := tmp[rand.Intn(len(tmp))]
+
+		rest[i][0] = l1.Posibilidades[rand.Intn(len(l1.Posibilidades))]
+		rest[i][1] = l2.Posibilidades[rand.Intn(len(l2.Posibilidades))]
+	}
+
+	return rest
+}
+
+// Dada una restriccion la busca en la posible solucion
+// Coste algoritmico: O(n)
+func Find(solv []Categorias, rest []string) bool {
+	count := 0
+
+	for _, categoria := range solv { // Maximo 5 iteraciones
+		for _, posibilidad := range categoria.Posibilidades { // Maximo n iteraciones
+			if rest[0] == posibilidad || rest[1] == posibilidad {
+				count++
+			}
+
+			if count >= 2 {
+				return true
+			}
+		}
+	}
+
+	return false
 }

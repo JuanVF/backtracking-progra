@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Esta es la accion que se va a ejecutar cuando el usuario pide el algoritmo de fuerza bruta
 func TestFuerzaBruta(ws *websocket.Conn) {
 	solucion := []Categorias{
 		{
@@ -48,6 +49,7 @@ func TestFuerzaBruta(ws *websocket.Conn) {
 		Number: int(time),
 	}, ws)
 
+	// Enviamos los resultados al usuario
 	for _, mensaje := range mensajes {
 		sockets.GetInstance().SendTo(mensaje, ws)
 	}
