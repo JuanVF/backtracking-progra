@@ -18,8 +18,10 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 			Json: string(json),
 		}
 
+		// Determinamos si es solucion
 		isSolution := reflect.DeepEqual(solucion, encontrada)
 
+		// Si es solucion se lo indicamos al front
 		if isSolution {
 			message.ID = 1
 		}

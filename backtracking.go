@@ -1,22 +1,36 @@
 package main
 
 import (
+	"encoding/json"
 	"math/rand"
 	"reflect"
 	"time"
+
+	"github.com/JuanVF/gogame-server/sockets"
 )
 
 // Algoritmo de Backtracking
-func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string, eliminadas *map[string]bool) (int, bool) {
+func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string, eliminadas *map[string]bool, mensajes *[]sockets.Message) (int, bool) {
 	// Caso base
 	if len(categorias) == 0 {
+		json, _ := json.Marshal(encontrada)
+		message := sockets.Message{
+			ID:   1,
+			Json: string(json),
+		}
+
+		// Determinamos si la solucion encontrada es la correcta
 		isSolution := reflect.DeepEqual(solucion, encontrada)
 
+		// Si no es solucion se solicita una "pista"
 		if !isSolution {
+			message.ID = 0
 			eliminada := SelectElim(solucion, encontrada)
 
 			(*eliminadas)[eliminada] = true
 		}
+
+		(*mensajes) = append(*mensajes, message)
 
 		return 1, isSolution
 	}
@@ -29,13 +43,15 @@ func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string
 			continue
 		}
 
+		// Vamos generando la solucion
 		generada := append(encontrada, Categorias{
 			Categoria:     categorias[0].Categoria,
 			Posibilidades: []string{posibilidad},
 		})
 
+		// Si es una solucion correcta
 		if isRightSolution(generada, rest) {
-			iteraciones, finded := Backtracking(categorias[1:], solucion, generada, rest, eliminadas)
+			iteraciones, finded := Backtracking(categorias[1:], solucion, generada, rest, eliminadas, mensajes)
 			amount += iteraciones
 
 			if finded {

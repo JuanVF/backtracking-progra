@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -33,31 +32,37 @@ func HandlerUsers(w http.ResponseWriter, req *http.Request) {
 	for {
 		var msg sockets.Message
 
+		// Esto se queda esperando a un mensaje del usuario
 		err := ws.ReadJSON(&msg)
 
+		// Si hay error lo desconectamos
 		if err != nil {
 			log.Printf("Message error: %v", err)
 
 			sockets.GetInstance().RemoveConn(ws)
-			break
+			return
 		}
 
+		// Hacemos print de lo que el usuario envio
 		log.Printf("User sended: %v\n", msg)
 
-		sockets.GetInstance().GetAction(msg.ID)(ws)
+		// Ejecutamos una accion en base a lo que el usuario envio
+		sockets.GetInstance().GetAction(msg.ID)(ws, msg)
 	}
 }
 
 func main() {
-	rest := GenerateRest(20, GetCategorias())
-	solv := GetSolution(GetCategorias(), rest)
+	// Agregamos las funciones para que el front envie peticiones
+	// para fuerza bruta y backtracking
+	sockets.GetInstance().AddAction(0, TestFuerzaBruta)
+	sockets.GetInstance().AddAction(1, TestBacktracking)
 
-	encontrada := []Categorias{}
-	eliminadas := make(map[string]bool)
-	mensajes := make([]sockets.Message, 0)
+	// Inicializamos el server
+	server := NewServer(5000)
 
-	iteraciones2, _ := Backtracking(GetCategorias(), solv, encontrada, rest, &eliminadas)
-	iteraciones, _ := FuerzaBruta(GetCategorias(), solv, encontrada, &mensajes)
-	fmt.Printf("Iteraciones en Fuerza bruta: %d\n", iteraciones)
-	fmt.Printf("Iteraciones en Backtracking: %d\n", iteraciones2)
+	// En la ruta /api por metodo get se va a manejar el websocket
+	server.Handle("/api", "GET", HandlerUsers)
+
+	// El servidor inicia
+	server.Listen()
 }

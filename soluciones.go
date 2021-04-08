@@ -11,12 +11,14 @@ type Categorias struct {
 	Posibilidades []string `json:"Posibilidades"`
 }
 
+// Esto se puede sustituir por un .json
+// Pero retorna una lista con todas las categorias
 func GetCategorias() []Categorias {
 	categorias := make([]Categorias, 5)
 
 	categorias[0] = Categorias{
 		Categoria:     "sospechoso",
-		Posibilidades: []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"},
+		Posibilidades: []string{"El/la mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"},
 	}
 
 	categorias[1] = Categorias{

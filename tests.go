@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"time"
 
 	"github.com/JuanVF/gogame-server/sockets"
@@ -9,41 +9,68 @@ import (
 )
 
 // Esta es la accion que se va a ejecutar cuando el usuario pide el algoritmo de fuerza bruta
-func TestFuerzaBruta(ws *websocket.Conn) {
-	solucion := []Categorias{
-		{
-			Categoria:     "sospechoso",
-			Posibilidades: []string{"El/la colega de trabajo"},
-		},
-		{
-			Categoria:     "arma",
-			Posibilidades: []string{"Cuerda"},
-		},
-		{
-			Categoria:     "motivo",
-			Posibilidades: []string{"Robo"},
-		},
-		{
-			Categoria:     "cuerpo",
-			Posibilidades: []string{"Brazos"},
-		},
-		{
-			Categoria:     "lugar",
-			Posibilidades: []string{"Cocina"},
-		},
+func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
+	rest := GenerateRest(msg.Number, GetCategorias())
+	solucion := GetSolution(GetCategorias(), rest)
+
+	// Enviamos la solucion al front
+	solMsgJson, _ := json.Marshal(solucion)
+	solMsg := sockets.Message{
+		ID:   3,
+		Json: string(solMsgJson),
 	}
+
+	sockets.GetInstance().SendTo(solMsg, ws)
 
 	encontrada := make([]Categorias, 0)
 	mensajes := make([]sockets.Message, 0)
 
+	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
 	FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes)
 
 	time := GetCurrentTime() - initTime
 
-	fmt.Printf("Termino en %dms", time)
+	// Enviamos al front
+	sockets.GetInstance().SendTo(sockets.Message{
+		ID:     2,
+		Number: int(time),
+	}, ws)
 
+	// Enviamos los resultados al usuario
+	for _, mensaje := range mensajes {
+		sockets.GetInstance().SendTo(mensaje, ws)
+	}
+}
+
+// Esta es la accion que se va a ejecutar cuando el usuario pide el algoritmo de fuerza bruta
+func TestBacktracking(ws *websocket.Conn, msg sockets.Message) {
+	rest := GenerateRest(msg.Number, GetCategorias())
+	solucion := GetSolution(GetCategorias(), rest)
+
+	// Enviamos la solucion al front
+	solMsgJson, _ := json.Marshal(solucion)
+	solMsg := sockets.Message{
+		ID:   3,
+		Json: string(solMsgJson),
+	}
+
+	sockets.GetInstance().SendTo(solMsg, ws)
+
+	// Inicializamos variables para bakctracking
+	encontrada := make([]Categorias, 0)
+	mensajes := make([]sockets.Message, 0)
+	eliminadas := make(map[string]bool)
+
+	// Medimos el tiempo
+	initTime := GetCurrentTime()
+
+	Backtracking(GetCategorias(), solucion, encontrada, rest, &eliminadas, &mensajes)
+
+	time := GetCurrentTime() - initTime
+
+	// Enviamos al front
 	sockets.GetInstance().SendTo(sockets.Message{
 		ID:     2,
 		Number: int(time),
