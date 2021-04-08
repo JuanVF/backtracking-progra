@@ -28,14 +28,14 @@ func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
 	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
-	FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes)
+	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes)
 
 	time := GetCurrentTime() - initTime
 
 	// Enviamos al front
 	sockets.GetInstance().SendTo(sockets.Message{
-		ID:     2,
-		Number: int(time),
+		ID:      2,
+		Numbers: []int{int(time), iteraciones},
 	}, ws)
 
 	// Enviamos los resultados al usuario
@@ -66,14 +66,14 @@ func TestBacktracking(ws *websocket.Conn, msg sockets.Message) {
 	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
-	Backtracking(GetCategorias(), solucion, encontrada, rest, &eliminadas, &mensajes)
+	iteraciones, _ := Backtracking(GetCategorias(), solucion, encontrada, rest, &eliminadas, &mensajes)
 
 	time := GetCurrentTime() - initTime
 
 	// Enviamos al front
 	sockets.GetInstance().SendTo(sockets.Message{
-		ID:     2,
-		Number: int(time),
+		ID:      2,
+		Numbers: []int{int(time), iteraciones},
 	}, ws)
 
 	// Enviamos los resultados al usuario
