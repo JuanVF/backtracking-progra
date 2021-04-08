@@ -25,6 +25,10 @@
             {
                 "text" : "El/la hermanastro(a)",
                 "type" : "default"
+            },
+            {
+                "text" : "El/la colega de trabajo",
+                "type" : "default"
             }
         ]
     },
