@@ -3,6 +3,8 @@ import {useState, useEffect} from 'react'
 import CardsContainer from '../components/cardsContainer'
 import cardsData from '../cards.json'
 
+import '../css/neo.css'
+
 const wsurl = "ws://localhost:5000/api"
 
 // Definimos el websocket
@@ -14,6 +16,7 @@ function CardsSection(){
     // Hooks de la app
     const [cardsList, setCardsList] = useState(JSON.parse(JSON.stringify(cardsData)))
     const [loading, setLoading] = useState(false)
+    const [numRest, setNumRest] = useState(0)
 
     // Acciones permitidas para la comunicacion entre websockets
     const wsActions = new Map([
@@ -38,6 +41,32 @@ function CardsSection(){
         }]
     ])
 
+    // Evento para el boton de backtracking
+    const backtrackingEvent = ()=>{
+        let msg = {
+            ID : 1,
+            number : numRest
+        }
+
+        ws.send(JSON.stringify(msg))
+    }
+
+    // Evento para el boton de fuerza bruta
+    const bruteforceEvent = ()=>{
+        let msg = {
+            ID : 0,
+            number : numRest
+        }
+
+        ws.send(JSON.stringify(msg))
+    }
+
+    const handleRestInput = (evt)=>{
+        evt.preventDefault()
+        
+        setNumRest(evt.target.value)
+    }
+
     // Se encarga de ejecutar la cola de mensajes que proviene del server
     const Listener = () => {
         if (queue[0] !== undefined){
@@ -60,13 +89,6 @@ function CardsSection(){
         // Evento de conexion
         ws.onopen = event => {
             console.log("Conexion con el websocket del servidor iniciada...")
-
-            let msg = {
-                ID : 1,
-                number : 5
-            }
-
-            ws.send(JSON.stringify(msg))
         }
 
         // Evento de error
@@ -87,17 +109,34 @@ function CardsSection(){
         setInterval(()=>{
             setLoading(true)
             setLoading(false)
-        }, 300)
+        }, 1000)
     }, [])
 
-    return !loading ? (
+    let rtHTML = !loading ? (
         <div>
             <p className="cards-container-title">Cartas disponibles</p>
             <CardsContainer cardsList={cardsList}/>
             <p className="cards-container-title">Solución generada</p>
             <CardsContainer cardsList={solution} type="default"/>
             <p className="cards-container-title">Estadisticas</p>
-        </div>) : (<div></div>)
+        </div>
+    ) : (<div></div>)
+
+    return (
+        <div>
+            <p className="cards-container-title">Tipo de test:</p>
+            <div className="buttons-container">
+                <input 
+                    className="neo-input" 
+                    type="number" 
+                    placeholder="restricciones"
+                    onChange={handleRestInput}
+                    value={numRest}/>
+                <button onClick={bruteforceEvent} className="neo-button">Fuerza bruta</button>
+                <button onClick={backtrackingEvent}className="neo-button">Backtracking</button>
+            </div>
+            {rtHTML}
+        </div>)
 }
     
 // Dada una posible solucion actualizamos el estado de las cartas

@@ -68,3 +68,18 @@
     padding: 10px 20px;
     box-sizing: border-box;
 }
+
+.buttons-container{
+    display: grid;
+    gap: 20px;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+    grid-template-columns: repeat(3, 250px);
+}
+
+.buttons-container .neo-button{
+    background-color: #2BAB6B;
+    color: white;
+}
