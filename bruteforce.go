@@ -9,7 +9,7 @@ import (
 
 // Algoritmo de fuerza bruta para encontrar la solucion
 // Este verifica cada una de las posibilidades
-func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message, rest [][]string) (int, bool) {
+func FuerzaBruta(categorias, solucion, encontrada []Categorias, eliminadas *map[string]bool, mensajes *[]sockets.Message) (int, bool) {
 	// Caso base
 	if len(categorias) == 0 {
 		json, _ := json.Marshal(encontrada)
@@ -21,9 +21,12 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 		// Determinamos si es solucion
 		isSolution := reflect.DeepEqual(solucion, encontrada)
 
-		// Si es solucion se lo indicamos al front
-		if isSolution {
+		// Si no es solucion se solicita una "pista"
+		if !isSolution {
 			message.ID = 1
+			eliminada := SelectElim(solucion, encontrada, *eliminadas)
+
+			(*eliminadas)[eliminada] = true
 		}
 
 		(*mensajes) = append(*mensajes, message)
@@ -40,11 +43,11 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 			Posibilidades: []string{posibilidad},
 		})
 
-		if !isRightSolution(generada, rest) {
+		/*if IsDeletedInSolution(generada, *eliminadas) {
 			continue
-		}
+		}*/
 
-		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, mensajes, rest)
+		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, eliminadas, mensajes)
 		amount += iteraciones
 
 		if finded {
@@ -53,4 +56,15 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 	}
 
 	return amount + 1, false
+}
+
+// Coste algoritmico: O(n)
+func IsDeletedInSolution(generada []Categorias, eliminadas map[string]bool) bool {
+	for _, posibilidadTmp := range generada { // n iteraciones
+		if eliminadas[posibilidadTmp.Posibilidades[0]] {
+			return true
+		}
+	}
+
+	return false
 }

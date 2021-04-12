@@ -56,20 +56,64 @@ func HandlerUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	/*solucion := GetSolution(GetCategorias())
+	rest := GenerateRest(5, solucion[1])
+
+	encontrada := make([]Categorias, 0)
+	mensajes := make([]sockets.Message, 0)
+	eliminadas := make(map[string]bool)
+
+	//FuerzaBruta(GetCategorias(), solucion, encontrada, &eliminadas, &mensajes)
+
+	Backtracking(GetCategorias(), solucion[0], encontrada, rest, &eliminadas, &mensajes)
+
+	fmt.Println(solucion)
+	fmt.Println(eliminadas)
+	fmt.Println(rest)*/
+	GenerarGraficas()
+}
+
+func GenerarGraficas() {
 	records := make(map[string]plotter.XYs)
 	recordsTime := make(map[string]plotter.XYs)
 
-	for i := 1; i <= 20; i++ { // Restricciones
+	for i := 1; i <= 10; i++ { // Restricciones
 		// Hacemos una media para que sea mas correcto
 		var promIteracionesfb float64 = 0
 		var promTiempofb float64 = 0
 		var promIteraciones float64 = 0
 		var promTiempo float64 = 0
 
-		rest := GenerateRest(i, GetCategorias())
-		solucion := GetSolution(GetCategorias(), rest)
+		solucion := GetSolution(GetCategorias())
 
-		for j := 0; j < 10; j++ { // Hacemos una media
+		solv := []Categorias{
+			{
+				Categoria:     "sospechoso",
+				Posibilidades: []string{"El/la colega de trabajo"},
+			},
+			{
+				Categoria:     "arma",
+				Posibilidades: []string{"Cuerda"},
+			},
+			{
+				Categoria:     "motivo",
+				Posibilidades: []string{"Robo"},
+			},
+			{
+				Categoria:     "cuerpo",
+				Posibilidades: []string{"Brazos"},
+			},
+			{
+				Categoria:     "lugar",
+				Posibilidades: []string{"Cocina"},
+			},
+		}
+
+		rest := GenerateRest(i, solucion[1])
+
+		rep := 50
+
+		for j := 0; j < rep; j++ { // Hacemos una media
 			encontrada := make([]Categorias, 0)
 			mensajes := make([]sockets.Message, 0)
 			eliminadas := make(map[string]bool)
@@ -77,39 +121,34 @@ func main() {
 			// Medimos el tiempo
 			initTime := GetCurrentTime()
 
-			iteracionesfb, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes, rest)
+			iteraciones, _ := Backtracking(GetCategorias(), solv, encontrada, rest, &eliminadas, &mensajes)
 
 			time := GetCurrentTime() - initTime
 
-			promTiempofb += float64(time)
-
-			encontrada = make([]Categorias, 0)
-			mensajes = make([]sockets.Message, 0)
-			eliminadas = make(map[string]bool)
+			promTiempo += float64(time)
 
 			initTime = GetCurrentTime()
 
-			iteraciones, _ := Backtracking(GetCategorias(), solucion, encontrada, rest, &eliminadas, &mensajes)
+			iteracionesfb, _ := FuerzaBruta(GetCategorias(), solv, encontrada, &eliminadas, &mensajes)
 
 			time = GetCurrentTime() - initTime
 
-			promTiempo += float64(time)
-
+			promTiempofb += float64(time)
 			promIteraciones += float64(iteraciones)
 			promIteracionesfb += float64(iteracionesfb)
 		}
 
-		promIteraciones /= 100
-		promIteracionesfb /= 100
-		promTiempo /= 100
-		promTiempofb /= 100
+		promIteraciones /= float64(rep)
+		promIteracionesfb /= float64(rep)
+		promTiempo /= float64(rep)
+		promTiempofb /= float64(rep)
 
-		recordsTime["Backtracking"] = append(records["Backtracking"], plotter.XY{
+		recordsTime["Backtracking"] = append(recordsTime["Backtracking"], plotter.XY{
 			X: float64(i),
 			Y: promTiempo,
 		})
 
-		recordsTime["FuerzaBruta"] = append(records["FuerzaBruta"], plotter.XY{
+		recordsTime["FuerzaBruta"] = append(recordsTime["FuerzaBruta"], plotter.XY{
 			X: float64(i),
 			Y: promTiempofb,
 		})
@@ -136,15 +175,7 @@ func main() {
 	p.X.Label.Text = "Restricciones"
 	p.Y.Label.Text = "Iteraciones"
 
-	ptime.Title.Text = "Rendimiento segun restricciones"
-	ptime.X.Label.Text = "Restricciones"
-	ptime.Y.Label.Text = "Tiempo"
-
 	err = plotutil.AddLinePoints(p,
-		"Backtracking", records["Backtracking"],
-		"FuerzaBruta", records["FuerzaBruta"])
-
-	err = plotutil.AddLinePoints(ptime,
 		"Backtracking", records["Backtracking"],
 		"FuerzaBruta", records["FuerzaBruta"])
 
@@ -155,6 +186,19 @@ func main() {
 	if err := p.Save(7*vg.Inch, 7*vg.Inch, "iteraciones.png"); err != nil {
 		panic(err)
 	}
+
+	ptime.Title.Text = "Rendimiento segun Tiempo"
+	ptime.X.Label.Text = "Restricciones"
+	ptime.Y.Label.Text = "Tiempo"
+
+	err = plotutil.AddLinePoints(ptime,
+		"Backtracking", recordsTime["Backtracking"],
+		"FuerzaBruta", recordsTime["FuerzaBruta"])
+
+	if err != nil {
+		return
+	}
+
 	if err := ptime.Save(7*vg.Inch, 7*vg.Inch, "tiempo.png"); err != nil {
 		panic(err)
 	}

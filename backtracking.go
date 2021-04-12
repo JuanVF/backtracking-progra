@@ -10,6 +10,9 @@ import (
 )
 
 // Algoritmo de Backtracking
+// rest = z
+// solucion = m
+// encontrada = t
 func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string, eliminadas *map[string]bool, mensajes *[]sockets.Message) (int, bool) {
 	// Caso base
 	if len(categorias) == 0 {
@@ -20,12 +23,12 @@ func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string
 		}
 
 		// Determinamos si la solucion encontrada es la correcta
-		isSolution := reflect.DeepEqual(solucion, encontrada)
+		isSolution := reflect.DeepEqual(solucion, encontrada) // m*t
 
 		// Si no es solucion se solicita una "pista"
 		if !isSolution {
 			message.ID = 0
-			eliminada := SelectElim(solucion, encontrada)
+			eliminada := SelectElim(solucion, encontrada, *eliminadas)
 
 			(*eliminadas)[eliminada] = true
 		}
@@ -38,25 +41,33 @@ func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string
 	amount := 0
 
 	// Probamos cada array
+	// O(n)
 	for _, posibilidad := range categorias[0].Posibilidades {
-		if (*eliminadas)[posibilidad] {
-			continue
-		}
-
 		// Vamos generando la solucion
+		// Generada = t
 		generada := append(encontrada, Categorias{
 			Categoria:     categorias[0].Categoria,
 			Posibilidades: []string{posibilidad},
 		})
 
-		// Si es una solucion correcta
-		if isRightSolution(generada, rest) {
-			iteraciones, finded := Backtracking(categorias[1:], solucion, generada, rest, eliminadas, mensajes)
-			amount += iteraciones
+		if len(generada)%2 == 0 {
+			solution, eliminada := isRightSolution(generada, rest)
 
-			if finded {
-				return amount + 1, true
+			(*eliminadas)[eliminada] = true
+			if solution {
+				continue
 			}
+		}
+
+		/*if IsDeletedInSolution(generada, *eliminadas) {
+			continue
+		}*/
+
+		iteraciones, finded := Backtracking(categorias[1:], solucion, generada, rest, eliminadas, mensajes)
+		amount += iteraciones
+
+		if finded {
+			return amount + 1, true
 		}
 	}
 	return amount + 1, false
@@ -64,7 +75,7 @@ func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string
 
 // Busca una opcion aleatoria y la retorna
 // Coste del algoritmo O(n) : n => tamano de sol
-func SelectElim(sol, encontrada []Categorias) string {
+func SelectElim(sol, encontrada []Categorias, eliminadas map[string]bool) string {
 	rand.Seed(time.Now().UnixNano())
 
 	tmp := []string{}
@@ -80,7 +91,7 @@ func SelectElim(sol, encontrada []Categorias) string {
 	// Lo mismo aplica aqui
 	for _, categoria := range encontrada {
 		for _, posibilidad := range categoria.Posibilidades {
-			if !toDelete[posibilidad] {
+			if !toDelete[posibilidad] && !eliminadas[posibilidad] {
 				tmp = append(tmp, posibilidad)
 			}
 		}

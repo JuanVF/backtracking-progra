@@ -10,8 +10,7 @@ import (
 
 // Esta es la accion que se va a ejecutar cuando el usuario pide el algoritmo de fuerza bruta
 func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
-	rest := GenerateRest(msg.Number, GetCategorias())
-	solucion := GetSolution(GetCategorias(), rest)
+	solucion := GetSolution(GetCategorias())
 
 	// Enviamos la solucion al front
 	solMsgJson, _ := json.Marshal(solucion)
@@ -24,11 +23,12 @@ func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
 
 	encontrada := make([]Categorias, 0)
 	mensajes := make([]sockets.Message, 0)
+	eliminadas := make(map[string]bool)
 
 	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
-	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes, rest)
+	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion[0], encontrada, &eliminadas, &mensajes)
 
 	time := GetCurrentTime() - initTime
 
@@ -46,8 +46,8 @@ func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
 
 // Esta es la accion que se va a ejecutar cuando el usuario pide el algoritmo de fuerza bruta
 func TestBacktracking(ws *websocket.Conn, msg sockets.Message) {
-	rest := GenerateRest(msg.Number, GetCategorias())
-	solucion := GetSolution(GetCategorias(), rest)
+	solucion := GetSolution(GetCategorias())
+	rest := GenerateRest(msg.Number, solucion[1])
 
 	// Enviamos la solucion al front
 	solMsgJson, _ := json.Marshal(solucion)
@@ -66,7 +66,7 @@ func TestBacktracking(ws *websocket.Conn, msg sockets.Message) {
 	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
-	iteraciones, _ := Backtracking(GetCategorias(), solucion, encontrada, rest, &eliminadas, &mensajes)
+	iteraciones, _ := Backtracking(GetCategorias(), solucion[0], encontrada, rest, &eliminadas, &mensajes)
 
 	time := GetCurrentTime() - initTime
 
