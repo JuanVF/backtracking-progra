@@ -19,7 +19,6 @@ function CardsSection(){
     const [numRest, setNumRest] = useState(0)
     const [iterations, setIterations] = useState(0)
     const [time, setTime] = useState(0.00)
-    const [numRest, setNumRest] = useState(0)
     
     // Acciones permitidas para la comunicacion entre websockets
     const wsActions = new Map([
@@ -37,11 +36,10 @@ function CardsSection(){
             console.log(SetPosibilidades(solucion, type))
         }],
         [2, function(msg){ // Funcion para que envie el tiempo y las iteraciones
-            let solucion = JSON.parse(msg.json)
-            let type = "time"
-    
-            setCardsList(SetPosibilidades(solucion, type))
-            console.log(SetPosibilidades(solucion, type))
+            setTime(msg.numbers[0])
+            setIterations(msg.numbers[1])
+
+
         }],
         [3, function(msg){ // Funcion para la solucion
             let solucion = JSON.parse(msg.json)
@@ -55,7 +53,7 @@ function CardsSection(){
     const backtrackingEvent = ()=>{
         let msg = {
             ID : 1,
-            number : numRest
+            number : parseInt(numRest)
         }
 
         ws.send(JSON.stringify(msg))
@@ -65,7 +63,7 @@ function CardsSection(){
     const bruteforceEvent = ()=>{
         let msg = {
             ID : 0,
-            number : numRest
+            number : parseInt(numRest)
         }
 
         ws.send(JSON.stringify(msg))
@@ -129,6 +127,10 @@ function CardsSection(){
             <p className="cards-container-title">Solución generada</p>
             <CardsContainer cardsList={solution} type="default"/>
             <p className="cards-container-title">Estadisticas</p>
+            <div>
+                <p className="cards-container-title">Tiempo de Duración {time} ms</p>
+                <p className="cards-container-title">Iteraciones {iterations}</p>
+            </div>
         </div>
     ) : (<div></div>)
 
