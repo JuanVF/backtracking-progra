@@ -28,7 +28,7 @@ func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
 	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
-	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes)
+	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes, rest)
 
 	time := GetCurrentTime() - initTime
 

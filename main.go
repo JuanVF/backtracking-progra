@@ -6,6 +6,10 @@ import (
 
 	"github.com/JuanVF/gogame-server/sockets"
 	"github.com/gorilla/websocket"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/plotutil"
+	"gonum.org/v1/plot/vg"
 )
 
 // Variable para generar la coneccion de websocket
@@ -52,17 +56,68 @@ func HandlerUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	// Agregamos las funciones para que el front envie peticiones
-	// para fuerza bruta y backtracking
-	sockets.GetInstance().AddAction(0, TestFuerzaBruta)
-	sockets.GetInstance().AddAction(1, TestBacktracking)
+	records := make(map[string]plotter.XYs)
 
-	// Inicializamos el server
-	server := NewServer(5000)
+	for i := 1; i <= 20; i++ { // Restricciones
+		// Hacemos una media para que sea mas correcto
+		var promIteracionesfb float64 = 0
+		var promIteraciones float64 = 0
 
-	// En la ruta /api por metodo get se va a manejar el websocket
-	server.Handle("/api", "GET", HandlerUsers)
+		for j := 0; j < 100; j++ { // Hacemos una media
+			rest := GenerateRest(i, GetCategorias())
+			solucion := GetSolution(GetCategorias(), rest)
+			encontrada := make([]Categorias, 0)
+			mensajes := make([]sockets.Message, 0)
+			eliminadas := make(map[string]bool)
 
-	// El servidor inicia
-	server.Listen()
+			// Medimos el tiempo
+			//initTime := GetCurrentTime()
+
+			iteracionesfb, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes, rest)
+
+			iteraciones, _ := Backtracking(GetCategorias(), solucion, encontrada, rest, &eliminadas, &mensajes)
+
+			//time := GetCurrentTime() - initTime
+
+			promIteraciones += float64(iteraciones)
+			promIteracionesfb += float64(iteracionesfb)
+			//promTiempo += float64(time)
+		}
+
+		promIteraciones /= 100
+		promIteracionesfb /= 100
+		//promTiempo /= 100
+
+		records["Backtracking"] = append(records["Backtracking"], plotter.XY{
+			X: float64(i),
+			Y: promIteraciones,
+		})
+
+		records["FuerzaBruta"] = append(records["FuerzaBruta"], plotter.XY{
+			X: float64(i),
+			Y: promIteracionesfb,
+		})
+	}
+
+	p, err := plot.New()
+
+	if err != nil {
+		return
+	}
+
+	p.Title.Text = "Rendimiento segun restricciones"
+	p.X.Label.Text = "Restricciones"
+	p.Y.Label.Text = "Iteraciones"
+
+	err = plotutil.AddLinePoints(p,
+		"Backtracking", records["Backtracking"],
+		"FuerzaBruta", records["FuerzaBruta"])
+
+	if err != nil {
+		return
+	}
+
+	if err := p.Save(7*vg.Inch, 7*vg.Inch, "points.png"); err != nil {
+		panic(err)
+	}
 }

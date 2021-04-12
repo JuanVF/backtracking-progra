@@ -9,7 +9,7 @@ import (
 
 // Algoritmo de fuerza bruta para encontrar la solucion
 // Este verifica cada una de las posibilidades
-func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message) (int, bool) {
+func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message, rest [][]string) (int, bool) {
 	// Caso base
 	if len(categorias) == 0 {
 		json, _ := json.Marshal(encontrada)
@@ -40,7 +40,11 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 			Posibilidades: []string{posibilidad},
 		})
 
-		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, mensajes)
+		if !isRightSolution(generada, rest) {
+			continue
+		}
+
+		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, mensajes, rest)
 		amount += iteraciones
 
 		if finded {
