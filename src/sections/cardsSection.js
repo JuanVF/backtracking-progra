@@ -17,7 +17,10 @@ function CardsSection(){
     const [cardsList, setCardsList] = useState(JSON.parse(JSON.stringify(cardsData)))
     const [loading, setLoading] = useState(false)
     const [numRest, setNumRest] = useState(0)
-
+    const [iterations, setIterations] = useState(0)
+    const [time, setTime] = useState(0.00)
+    const [numRest, setNumRest] = useState(0)
+    
     // Acciones permitidas para la comunicacion entre websockets
     const wsActions = new Map([
         [0, function(msg){ // Funcion para una solucion incorrecta
@@ -29,6 +32,13 @@ function CardsSection(){
         [1, function(msg){ // Funcion para una solucion correcta
             let solucion = JSON.parse(msg.json)
             let type = "answer"
+    
+            setCardsList(SetPosibilidades(solucion, type))
+            console.log(SetPosibilidades(solucion, type))
+        }],
+        [2, function(msg){ // Funcion para que envie el tiempo y las iteraciones
+            let solucion = JSON.parse(msg.json)
+            let type = "time"
     
             setCardsList(SetPosibilidades(solucion, type))
             console.log(SetPosibilidades(solucion, type))
