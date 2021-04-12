@@ -24,11 +24,12 @@ func TestFuerzaBruta(ws *websocket.Conn, msg sockets.Message) {
 
 	encontrada := make([]Categorias, 0)
 	mensajes := make([]sockets.Message, 0)
+	eliminadas := make(map[string]bool)
 
 	// Medimos el tiempo
 	initTime := GetCurrentTime()
 
-	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &mensajes)
+	iteraciones, _ := FuerzaBruta(GetCategorias(), solucion, encontrada, &eliminadas, &mensajes)
 
 	time := GetCurrentTime() - initTime
 

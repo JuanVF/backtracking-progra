@@ -9,7 +9,7 @@ import (
 
 // Algoritmo de fuerza bruta para encontrar la solucion
 // Este verifica cada una de las posibilidades
-func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message) (int, bool) {
+func FuerzaBruta(categorias, solucion, encontrada []Categorias, eliminadas *map[string]bool, mensajes *[]sockets.Message) (int, bool) {
 	// Caso base
 	if len(categorias) == 0 {
 		json, _ := json.Marshal(encontrada)
@@ -21,9 +21,12 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 		// Determinamos si es solucion
 		isSolution := reflect.DeepEqual(solucion, encontrada)
 
-		// Si es solucion se lo indicamos al front
-		if isSolution {
+		// Si no es solucion se solicita una "pista"
+		if !isSolution {
 			message.ID = 1
+			eliminada := SelectElim(solucion, encontrada)
+
+			(*eliminadas)[eliminada] = true
 		}
 
 		(*mensajes) = append(*mensajes, message)
@@ -35,12 +38,17 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, mensajes *[]sock
 
 	// Probamos cada posibilidad
 	for _, posibilidad := range categorias[0].Posibilidades {
+
+		if (*eliminadas)[posibilidad] {
+			continue
+		}
+
 		generada := append(encontrada, Categorias{
 			Categoria:     categorias[0].Categoria,
 			Posibilidades: []string{posibilidad},
 		})
 
-		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, mensajes)
+		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, eliminadas, mensajes)
 		amount += iteraciones
 
 		if finded {
