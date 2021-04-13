@@ -76,7 +76,7 @@
     align-content: center;
     justify-content: center;
     justify-items: center;
-    grid-template-columns: repeat(3, 250px);
+    grid-template-columns: repeat(4, 250px);
 }
 
 .buttons-container .neo-button{

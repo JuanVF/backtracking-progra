@@ -33,19 +33,15 @@ function CardsSection(){
             let type = "answer"
     
             setCardsList(SetPosibilidades(solucion, type))
-            console.log(SetPosibilidades(solucion, type))
         }],
         [2, function(msg){ // Funcion para que envie el tiempo y las iteraciones
             setTime(msg.numbers[0])
             setIterations(msg.numbers[1])
-
-
         }],
         [3, function(msg){ // Funcion para la solucion
             let solucion = JSON.parse(msg.json)
 
             solution = ParseSolution(solucion)
-            console.log(solution)
         }]
     ])
 
@@ -63,6 +59,16 @@ function CardsSection(){
     const bruteforceEvent = ()=>{
         let msg = {
             ID : 0,
+            number : parseInt(numRest)
+        }
+
+        ws.send(JSON.stringify(msg))
+    }
+
+    // Evento para el boton de fuerza bruta puro
+    const completeBruteforceEvent = ()=>{
+        let msg = {
+            ID : 2,
             number : parseInt(numRest)
         }
 
@@ -146,6 +152,7 @@ function CardsSection(){
                     value={numRest}/>
                 <button onClick={bruteforceEvent} className="neo-button">Fuerza bruta</button>
                 <button onClick={backtrackingEvent}className="neo-button">Backtracking</button>
+                <button onClick={completeBruteforceEvent}className="neo-button">Fuerza bruta Pura</button>
             </div>
             {rtHTML}
         </div>)
