@@ -14,7 +14,7 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, eliminadas *map[
 	if len(categorias) == 0 {
 		json, _ := json.Marshal(encontrada)
 		message := sockets.Message{
-			ID:   0,
+			ID:   1,
 			Json: string(json),
 		}
 
@@ -23,7 +23,7 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, eliminadas *map[
 
 		// Si no es solucion se solicita una "pista"
 		if !isSolution {
-			message.ID = 1
+			message.ID = 0
 			eliminada := SelectElim(solucion, encontrada, *eliminadas)
 
 			(*eliminadas)[eliminada] = true
@@ -43,19 +43,63 @@ func FuerzaBruta(categorias, solucion, encontrada []Categorias, eliminadas *map[
 			Posibilidades: []string{posibilidad},
 		})
 
-		/*if IsDeletedInSolution(generada, *eliminadas) {
+		if IsDeletedInSolution(generada, *eliminadas) {
 			continue
-		}*/
+		}
 
 		iteraciones, finded := FuerzaBruta(categorias[1:], solucion, generada, eliminadas, mensajes)
-		amount += iteraciones
+		amount += iteraciones + 1
 
 		if finded {
-			return amount + 1, true
+			return amount, true
 		}
 	}
 
-	return amount + 1, false
+	return amount, false
+}
+
+// Algoritmo de fuerza bruta para encontrar la solucion
+// Este verifica cada una de las posibilidades
+func FuerzaBrutaCompleta(categorias, solucion, encontrada []Categorias, mensajes *[]sockets.Message) (int, bool) {
+	// Caso base
+	if len(categorias) == 0 {
+		json, _ := json.Marshal(encontrada)
+		message := sockets.Message{
+			ID:   1,
+			Json: string(json),
+		}
+
+		// Determinamos si es solucion
+		isSolution := reflect.DeepEqual(solucion, encontrada)
+
+		// Si no es solucion se solicita una "pista"
+		if !isSolution {
+			message.ID = 0
+		}
+
+		(*mensajes) = append(*mensajes, message)
+
+		return 1, isSolution
+	}
+
+	amount := 0
+
+	// Probamos cada posibilidad
+	for _, posibilidad := range categorias[0].Posibilidades {
+		generada := append(encontrada, Categorias{
+			Categoria:     categorias[0].Categoria,
+			Posibilidades: []string{posibilidad},
+		})
+
+		iteraciones, finded := FuerzaBrutaCompleta(categorias[1:], solucion, generada, mensajes)
+		amount += iteraciones + 1
+
+		if finded {
+			return amount, true
+		}
+	}
+
+	return amount, false
 }
 
 // Coste algoritmico: O(n)

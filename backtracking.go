@@ -14,6 +14,7 @@ import (
 // solucion = m
 // encontrada = t
 func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string, eliminadas *map[string]bool, mensajes *[]sockets.Message) (int, bool) {
+
 	// Caso base
 	if len(categorias) == 0 {
 		json, _ := json.Marshal(encontrada)
@@ -43,6 +44,10 @@ func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string
 	// Probamos cada array
 	// O(n)
 	for _, posibilidad := range categorias[0].Posibilidades {
+		if (*eliminadas)[posibilidad] {
+			continue
+		}
+
 		// Vamos generando la solucion
 		// Generada = t
 		generada := append(encontrada, Categorias{
@@ -50,27 +55,26 @@ func Backtracking(categorias, solucion, encontrada []Categorias, rest [][]string
 			Posibilidades: []string{posibilidad},
 		})
 
-		if len(generada)%2 == 0 {
-			solution, eliminada := isRightSolution(generada, rest)
+		if !isRightSolution(generada, rest) {
+			eliminada := SelectElim(solucion, encontrada, *eliminadas)
 
 			(*eliminadas)[eliminada] = true
-			if solution {
-				continue
-			}
 		}
 
-		/*if IsDeletedInSolution(generada, *eliminadas) {
-			continue
-		}*/
+		// n*t iteraciones
+		if IsDeletedInSolution(generada, *eliminadas) {
+			return amount, false
+		}
 
 		iteraciones, finded := Backtracking(categorias[1:], solucion, generada, rest, eliminadas, mensajes)
-		amount += iteraciones
+		amount += iteraciones + 1
 
 		if finded {
-			return amount + 1, true
+			return amount, true
 		}
 	}
-	return amount + 1, false
+
+	return amount, false
 }
 
 // Busca una opcion aleatoria y la retorna

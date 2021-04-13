@@ -18,27 +18,27 @@ func GetCategorias() []Categorias {
 
 	categorias[0] = Categorias{
 		Categoria:     "sospechoso",
-		Posibilidades: []string{"El/la mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)"},
+		Posibilidades: []string{"El/la mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"},
 	}
 
 	categorias[1] = Categorias{
 		Categoria:     "arma",
-		Posibilidades: []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo"},
+		Posibilidades: []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"},
 	}
 
 	categorias[2] = Categorias{
 		Categoria:     "motivo",
-		Posibilidades: []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas"},
+		Posibilidades: []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"},
 	}
 
 	categorias[3] = Categorias{
 		Categoria:     "cuerpo",
-		Posibilidades: []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas"},
+		Posibilidades: []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"},
 	}
 
 	categorias[4] = Categorias{
 		Categoria:     "lugar",
-		Posibilidades: []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón"},
+		Posibilidades: []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"},
 	}
 
 	return categorias
@@ -46,8 +46,8 @@ func GetCategorias() []Categorias {
 
 // Determina si una solución es válida
 // Sea k : tamano de restricciones, n : tamano de solv
-// Coste algoritmico: O(k)
-func isRightSolution(solv []Categorias, rest [][]string) (bool, string) {
+// Coste algoritmico: O(kn)
+func isRightSolution(solv []Categorias, rest [][]string) bool {
 	mapaRest := make(map[string]string)
 	mapaSoluciones := make(map[string]bool)
 
@@ -66,31 +66,12 @@ func isRightSolution(solv []Categorias, rest [][]string) (bool, string) {
 		current := mapaRest[solucion]
 
 		if mapaSoluciones[current] {
-			return false, current
+			return false
 		}
 	}
 
-	return true, ""
-}
+	return true
 
-// Dada una restriccion la busca en la posible solucion
-// Coste algoritmico: O(n)
-func Find(solv []Categorias, rest []string) bool {
-	count := 0
-
-	for _, categoria := range solv { // Maximo 5 iteraciones
-		for _, posibilidad := range categoria.Posibilidades { // Maximo n iteraciones
-			if rest[0] == posibilidad || rest[1] == posibilidad {
-				count++
-			}
-
-			if count >= 2 {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 // Se genera una solucion sin validar que sea valida
@@ -111,10 +92,7 @@ func GetSolution(posibilidades []Categorias) [][]Categorias {
 
 		rst[i] = current
 		rst[i].Posibilidades = posibilidades[i].Posibilidades[:index+1]
-
-		if len(rst[i].Posibilidades) == 0 {
-			rst[i].Posibilidades = append(rst[i].Posibilidades, posibilidades[i].Posibilidades[index:]...)
-		}
+		rst[i].Posibilidades = append(rst[i].Posibilidades, posibilidades[i].Posibilidades[index:]...)
 	}
 
 	return [][]Categorias{categorias, rst}
@@ -144,4 +122,22 @@ func GenerateRest(cant int, posibilidades []Categorias) [][]string {
 	}
 
 	return rest
+}
+
+// Dada una restriccion la busca en la posible solucion
+// Coste algoritmico: O(5)
+func Find(solv []Categorias, rest []string) bool {
+	count := 0
+
+	for _, categoria := range solv { // Maximo 5 iteraciones
+		if rest[0] == categoria.Posibilidades[0] || rest[1] == categoria.Posibilidades[0] {
+			count++
+		}
+
+		if count >= 2 {
+			return true
+		}
+	}
+
+	return false
 }
