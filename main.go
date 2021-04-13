@@ -1,68 +1,21 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/JuanVF/gogame-server/sockets"
-	"github.com/gorilla/websocket"
+	"fmt"
 )
 
-// Variable para generar la coneccion de websocket
-var Upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-// Handler para mantener la coneccion por websocket
-func HandlerUsers(w http.ResponseWriter, req *http.Request) {
-	ws, err := Upgrader.Upgrade(w, req, nil)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer ws.Close()
-
-	// Agregamos el usuario a la lista de usuarios conectados
-	sockets.GetInstance().AddConn(ws)
-
-	// Esto funciona basicamente como un listener del usuario
-	for {
-		var msg sockets.Message
-
-		// Esto se queda esperando a un mensaje del usuario
-		err := ws.ReadJSON(&msg)
-
-		// Si hay error lo desconectamos
-		if err != nil {
-			log.Printf("Message error: %v", err)
-
-			sockets.GetInstance().RemoveConn(ws)
-			return
-		}
-
-		// Hacemos print de lo que el usuario envio
-		log.Printf("User sended: %v\n", msg)
-
-		// Ejecutamos una accion en base a lo que el usuario envio
-		sockets.GetInstance().GetAction(msg.ID)(ws, msg)
-	}
-}
-
 func main() {
-	// Agregamos las funciones para que el front envie peticiones
-	// para fuerza bruta y backtracking
-	sockets.GetInstance().AddAction(0, TestFuerzaBruta)
-	sockets.GetInstance().AddAction(1, TestBacktracking)
+	sospechoso := []string{"El/La mejor amigo(a)", "El/la novio(a)", "El/la vecino(a)", "El mensajero", "El extraño", "El/la hermanastro(a)", "El/la colega de trabajo"}
+	arma := []string{"Pistola", "Cuchillo", "Machete", "Pala", "Bate", "Botella", "Tubo", "Cuerda"}
+	motivo := []string{"Venganza", "Celos", "Dinero", "Accidente", "Drogas", "Robo"}
+	cuerpo := []string{"Cabeza", "Pecho", "Abdomen", "Espalda", "Piernas", "Brazos"}
+	lugar := []string{"Sala", "Comedor", "Baño", "Terraza", "Cuarto", "Garage", "Patio", "Balcón", "Cocina"}
 
-	// Inicializamos el server
-	server := NewServer(5000)
+	posibilidades := [][]string{sospechoso, arma, motivo, cuerpo, lugar}
+	solucion := []string{"El/la colega de trabajo", "Cuerda", "Robo", "Brazos", "Cocina"}
+	encontrada := []string{}
 
-	// En la ruta /api por metodo get se va a manejar el websocket
-	server.Handle("/api", "GET", HandlerUsers)
+	iteraciones, _ := FuerzaBruta(posibilidades, solucion, encontrada)
 
-	// El servidor inicia
-	server.Listen()
+	fmt.Printf("Iteraciones en fuerza bruta: %d\n", iteraciones)
 }

@@ -10,7 +10,7 @@ import (
 var handler *SocketHandler
 
 // Void is a type to send void functions as arguments
-type Void func(*websocket.Conn, Message)
+type Void func()
 
 // SocketHandler will handle all the connections from
 // users through websockets, also will contain all the actions
@@ -28,7 +28,7 @@ func GetInstance() *SocketHandler {
 		handler = &SocketHandler{
 			connections: make(map[*websocket.Conn]*Sockets),
 			actions:     make(map[int]Void),
-			errorAction: func(*websocket.Conn, Message) {
+			errorAction: func() {
 				// By default will not do anything
 				fmt.Printf("Error: function doesnt exists requested by socket...\n")
 			},
@@ -60,7 +60,6 @@ func (s *SocketHandler) RemoveConn(ws *websocket.Conn) error {
 		return fmt.Errorf("User does not exists...\n")
 	}
 
-	ws.Close()
 	delete(s.connections, ws)
 
 	return nil
